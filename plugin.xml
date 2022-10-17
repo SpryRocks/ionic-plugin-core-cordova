@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="cordova-core-plugin" version="0.0.1">
+    <name>Core Plugin</name>
+    <description>Framework for cordova Plugin</description>
+    <license>Apache 2.0</license>
+    <keywords>cordova</keywords>
+
+    <platform name="android">
+
+        <!-- Lib -->
+        <!-- Framework -->
+        <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference"/>
+
+        <source-file src="src/android/src/core/actions/BaseAction.kt" target-dir="src/com/ionic/plugin/android/cordova/core/actions"/>
+        <source-file src="src/android/src/core/actions/CallContext.kt" target-dir="src/com/ionic/plugin/android/cordova/core/actions"/>
+        <source-file src="src/android/src/core/actions/Delegate.kt" target-dir="src/com/ionic/plugin/android/cordova/core/actions"/>
+
+        <source-file src="src/android/src/core/PluginException.java" target-dir="src/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/Extensions.kt" target-dir="src/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/Plugin.kt" target-dir="src/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/CordovaPlugin.kt" target-dir="src/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/WrapperDelegate.kt" target-dir="src/com/ionic/plugin/android/cordova/core"/>
+
+    </platform>
+
+</plugin>

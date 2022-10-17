@@ -1,0 +1,20 @@
+{
+  "name": "@spryrocks/cordova-ionic-core-plugin",
+  "version": "3.0.0-alpha.0",
+  "description": "Core Plugin",
+  "cordova": {
+    "id": "cordova-ionic-core-plugin",
+    "platforms": [
+      "android"
+    ]
+  },
+  "scripts": {},
+  "keywords": [
+    "cordova"
+  ],
+  "author": "",
+  "license": "",
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,8 @@
+repositories {
+}
+
+dependencies {
+    implementation "com.github.SpryRocks.ionic-plugin-core:core:$ionicPluginCore"
+    implementation "com.github.SpryRocks.ionic-plugin-core:android:$ionicPluginCore"
+    implementation "com.github.SpryRocks.ionic-plugin-core:kson:$ionicPluginCore"
+}
