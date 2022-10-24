@@ -12,6 +12,7 @@ import com.spryrocks.kson.MutableJsonObject
 import org.apache.cordova.CallbackContext
 import org.apache.cordova.PluginResult
 import org.json.JSONArray
+import org.json.JSONObject
 
 class CallContext(
     jsonArray: JSONArray,
@@ -19,7 +20,7 @@ class CallContext(
     wrapperDelegate: WrapperDelegate,
     private val errorMapper: IErrorMapper,
 ) : CallContext(wrapperDelegate) {
-    private val jsonObject = jsonArray.getJSONObject(0)
+    private val jsonObject: JSONObject? = jsonArray.optJSONObject(0)
 
     override fun get(name: String) = throw NotImplementedError()
 
@@ -43,33 +44,36 @@ class CallContext(
 
     override fun opt(name: String) = throw NotImplementedError()
 
-    override fun optString(name: String) = nullable(name) { jsonObject.getString(name) }
+    override fun optString(name: String) =
+        nullable(name) { jsonObject -> jsonObject.getString(name) }
 
-    override fun optInt(name: String) = nullable(name) { jsonObject.getInt(name) }
+    override fun optInt(name: String) = nullable(name) { jsonObject -> jsonObject.getInt(name) }
 
-    override fun optBoolean(name: String) = nullable(name) { jsonObject.getBoolean(name) }
+    override fun optBoolean(name: String) =
+        nullable(name) { jsonObject -> jsonObject.getBoolean(name) }
 
-    override fun optFloat(name: String) = nullable(name) { jsonObject.getDouble(name).toFloat() }
+    override fun optFloat(name: String) =
+        nullable(name) { jsonObject -> jsonObject.getDouble(name).toFloat() }
 
-    override fun optDouble(key: String) = nullable(key) { jsonObject.getDouble(key) }
+    override fun optDouble(key: String) = nullable(key) { jsonObject -> jsonObject.getDouble(key) }
 
-    override fun optJsonObject(name: String) = nullable(name) {
+    override fun optJsonObject(name: String) = nullable(name) { jsonObject ->
         val jsonString = jsonObject.getJSONObject(name).toString()
         return@nullable JsonObject.fromJson(jsonString)
     }
 
-    override fun optLong(name: String) = nullable(name) { jsonObject.getLong(name) }
+    override fun optLong(name: String) = nullable(name) { jsonObject -> jsonObject.getLong(name) }
 
     override fun optNumber(name: String) = throw NotImplementedError()
 
-    override fun optJsonArray(name: String) = nullable(name) {
+    override fun optJsonArray(name: String) = nullable(name) { jsonObject ->
         val jsonString = jsonObject.getJSONArray(name).toString()
         return@nullable JsonArray.fromJson(jsonString)
     }
 
-    private fun <T> nullable(key: String, getter: () -> T): T? {
-        if (jsonObject.isNull(key)) return null
-        return getter()
+    private fun <T> nullable(key: String, getter: (jsonObject: JSONObject) -> T): T? {
+        if (jsonObject == null || jsonObject.isNull(key)) return null
+        return getter(jsonObject)
     }
 
     private fun <T> require(name: String, block: (name: String) -> T?) =
@@ -84,17 +88,18 @@ class CallContext(
     }
 
     private fun success(data: JsonObject?, finish: Boolean) {
-        val jsonObject = data?.toJSONObject()
-        val result = if (jsonObject == null)
+        val result = data?.toJSONObject()
+
+        val pluginResult = if (result == null)
             PluginResult(PluginResult.Status.OK)
         else
-            PluginResult(PluginResult.Status.OK, jsonObject)
+            PluginResult(PluginResult.Status.OK, result)
 
         if (!finish) {
-            result.keepCallback = true
+            pluginResult.keepCallback = true
         }
 
-        callbackContext.sendPluginResult(result)
+        callbackContext.sendPluginResult(pluginResult)
     }
 
     private fun error(error: Throwable?, finish: Boolean) {
@@ -104,17 +109,15 @@ class CallContext(
             else -> null
         }
 
-        val defaultMessage = "Unknown error"
-
-        val message = exception?.message ?: defaultMessage
         val json = (exception as? PluginException)?.let(errorMapper::mapToJson)
+        val result = (json ?: MutableJsonObject()).toJSONObject()
 
-        val result = MutableJsonObject()
-        result.put("message", message)
-        if (json != null) {
-            result.put("status", json)
+        val pluginResult = PluginResult(PluginResult.Status.ERROR, result)
+
+        if (!finish) {
+            pluginResult.keepCallback = true
         }
 
-        callbackContext.error(result.toJSONObject())
+        callbackContext.sendPluginResult(pluginResult)
     }
 }
