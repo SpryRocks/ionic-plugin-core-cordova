@@ -76,11 +76,10 @@ class CallContext(
         block(name) ?: throw Exception("value with name '${name}' is null")
 
     override fun result(result: CallContextResult, finish: Boolean) {
-//        if (!finish) callbackContext.k
         when (result) {
             is CallContextResult.Success -> success(result.data, finish)
-            is CallContextResult.Error -> error(result.error)
-            else -> error(null)
+            is CallContextResult.Error -> error(result.error, finish)
+            else -> error(null, finish)
         }
     }
 
@@ -91,10 +90,14 @@ class CallContext(
         else
             PluginResult(PluginResult.Status.OK, jsonObject)
 
+        if (!finish) {
+            result.keepCallback = true
+        }
+
         callbackContext.sendPluginResult(result)
     }
 
-    private fun error(error: Throwable?) {
+    private fun error(error: Throwable?, finish: Boolean) {
         val exception: Exception? = when (error) {
             is Exception -> error
             is Throwable -> Exception(error)
