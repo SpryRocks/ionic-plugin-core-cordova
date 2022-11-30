@@ -22,26 +22,6 @@ class CallContext(
 ) : CallContext(wrapperDelegate) {
     private val jsonObject: JSONObject? = jsonArray.optJSONObject(0)
 
-    override fun get(name: String) = throw NotImplementedError()
-
-    override fun getBoolean(name: String) = require(name, ::optBoolean)
-
-    override fun getFloat(name: String) = require(name, ::optFloat)
-
-    override fun getDouble(key: String) = require(key, ::optDouble)
-
-    override fun getInt(name: String) = require(name, ::optInt)
-
-    override fun getJsonArray(name: String) = require(name, ::optJsonArray)
-
-    override fun getJsonObject(name: String) = require(name, ::optJsonObject)
-
-    override fun getLong(name: String) = require(name, ::optLong)
-
-    override fun getNumber(name: String) = throw NotImplementedError()
-
-    override fun getString(name: String) = require(name, ::optString)
-
     override fun opt(name: String) = throw NotImplementedError()
 
     override fun optString(name: String) =
@@ -55,7 +35,7 @@ class CallContext(
     override fun optFloat(name: String) =
         nullable(name) { jsonObject -> jsonObject.getDouble(name).toFloat() }
 
-    override fun optDouble(key: String) = nullable(key) { jsonObject -> jsonObject.getDouble(key) }
+    override fun optDouble(name: String) = nullable(name) { jsonObject -> jsonObject.getDouble(name) }
 
     override fun optJsonObject(name: String) = nullable(name) { jsonObject ->
         val jsonString = jsonObject.getJSONObject(name).toString()
@@ -75,9 +55,6 @@ class CallContext(
         if (jsonObject == null || jsonObject.isNull(key)) return null
         return getter(jsonObject)
     }
-
-    private fun <T> require(name: String, block: (name: String) -> T?) =
-        block(name) ?: throw Exception("value with name '${name}' is null")
 
     override fun result(result: CallContextResult, finish: Boolean) {
         when (result) {
