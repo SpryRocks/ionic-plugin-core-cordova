@@ -1,4 +1,17 @@
+ext {
+    ionicPluginCore = project.hasProperty('ionicPluginCore') ? rootProject.ext.ionicPluginCore : '0.0.4-test.8'
+    GITHUB_ACTOR = 'maximzhemerenko'
+    GITHUB_TOKEN = 'ghp_0N1ouPWjClwaUg' + '039j23ph1mlG9NDb0L0qOa'
+}
+
 repositories {
+    maven {
+        url = uri("https://maven.pkg.github.com/SpryRocks/ionic-plugin-core")
+        credentials {
+            username = project.findProperty("GITHUB_ACTOR") as String
+            password = project.findProperty("GITHUB_TOKEN") as String
+        }
+    }
 }
 
 dependencies {
