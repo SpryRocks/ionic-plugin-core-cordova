@@ -12,15 +12,15 @@
         <!-- Framework -->
         <framework src="src/android/build-extras.gradle" custom="true" type="gradleReference"/>
 
-        <source-file src="src/android/src/core/actions/BaseAction.kt" target-dir="src/com/ionic/plugin/android/cordova/core/actions"/>
-        <source-file src="src/android/src/core/actions/CallContext.kt" target-dir="src/com/ionic/plugin/android/cordova/core/actions"/>
-        <source-file src="src/android/src/core/actions/Delegate.kt" target-dir="src/com/ionic/plugin/android/cordova/core/actions"/>
+        <source-file src="src/android/src/core/actions/BaseAction.kt" target-dir="src/main/java/com/ionic/plugin/android/cordova/core/actions"/>
+        <source-file src="src/android/src/core/actions/CallContext.kt" target-dir="src/main/java/com/ionic/plugin/android/cordova/core/actions"/>
+        <source-file src="src/android/src/core/actions/Delegate.kt" target-dir="src/main/java/com/ionic/plugin/android/cordova/core/actions"/>
 
-        <source-file src="src/android/src/core/PluginException.java" target-dir="src/com/ionic/plugin/android/cordova/core"/>
-        <source-file src="src/android/src/core/Extensions.kt" target-dir="src/com/ionic/plugin/android/cordova/core"/>
-        <source-file src="src/android/src/core/Plugin.kt" target-dir="src/com/ionic/plugin/android/cordova/core"/>
-        <source-file src="src/android/src/core/CordovaPlugin.kt" target-dir="src/com/ionic/plugin/android/cordova/core"/>
-        <source-file src="src/android/src/core/WrapperDelegate.kt" target-dir="src/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/CordovaPlugin.kt" target-dir="src/main/java/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/Extensions.kt" target-dir="src/main/java/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/Plugin.kt" target-dir="src/main/java/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/PluginException.java" target-dir="src/main/java/com/ionic/plugin/android/cordova/core"/>
+        <source-file src="src/android/src/core/WrapperDelegate.kt" target-dir="src/main/java/com/ionic/plugin/android/cordova/core"/>
 
     </platform>
 

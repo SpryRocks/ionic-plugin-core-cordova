@@ -1,76 +1,81 @@
 package com.ionic.plugin.android.cordova.core.actions
 
 import com.ionic.plugin.android.cordova.core.WrapperDelegate
+import com.ionic.plugin.android.cordova.core.toJSONArray
 import com.ionic.plugin.android.cordova.core.toJSONObject
 import com.ionic.plugin.android.core.actions.CallContext
 import com.ionic.plugin.core.PluginException
-import com.ionic.plugin.core.actions.CallContextResult
-import com.ionic.plugin.core.actions.IErrorMapper
+import com.ionic.plugin.core.actions.Mappers
 import com.spryrocks.kson.JsonArray
 import com.spryrocks.kson.JsonObject
 import com.spryrocks.kson.MutableJsonObject
 import org.apache.cordova.CallbackContext
 import org.apache.cordova.PluginResult
 import org.json.JSONArray
-import org.json.JSONObject
 
 class CallContext(
-    jsonArray: JSONArray,
+    private val jsonArray: JSONArray,
     private val callbackContext: CallbackContext,
     wrapperDelegate: WrapperDelegate,
-    private val errorMapper: IErrorMapper,
+    private val mappers: Mappers,
 ) : CallContext(wrapperDelegate) {
-    private val jsonObject: JSONObject? = jsonArray.optJSONObject(0)
+    override fun asArray() = AsArray(jsonArray)
 
-    override fun opt(name: String) = throw NotImplementedError()
-
-    override fun optString(name: String) =
-        nullable(name) { jsonObject -> jsonObject.getString(name) }
-
-    override fun optInt(name: String) = nullable(name) { jsonObject -> jsonObject.getInt(name) }
-
-    override fun optBoolean(name: String) =
-        nullable(name) { jsonObject -> jsonObject.getBoolean(name) }
-
-    override fun optFloat(name: String) =
-        nullable(name) { jsonObject -> jsonObject.getDouble(name).toFloat() }
-
-    override fun optDouble(name: String) = nullable(name) { jsonObject -> jsonObject.getDouble(name) }
-
-    override fun optJsonObject(name: String) = nullable(name) { jsonObject ->
-        val jsonString = jsonObject.getJSONObject(name).toString()
-        return@nullable JsonObject.fromJson(jsonString)
+    override fun asObject(): AsObject {
+        throw PluginException("Not implemented")
     }
 
-    override fun optLong(name: String) = nullable(name) { jsonObject -> jsonObject.getLong(name) }
+    class AsArray(private val jsonArray: JSONArray): com.ionic.plugin.core.actions.CallContext.AsArray() {
+        override val size get() = jsonArray.length()
 
-    override fun optNumber(name: String) = throw NotImplementedError()
+        override fun opt(index: Int) = throw NotImplementedError()
 
-    override fun optJsonArray(name: String) = nullable(name) { jsonObject ->
-        val jsonString = jsonObject.getJSONArray(name).toString()
-        return@nullable JsonArray.fromJson(jsonString)
-    }
+        override fun optString(index: Int) =
+            nullable(index) { jsonObject -> jsonObject.getString(index) }
 
-    private fun <T> nullable(key: String, getter: (jsonObject: JSONObject) -> T): T? {
-        if (jsonObject == null || jsonObject.isNull(key)) return null
-        return getter(jsonObject)
-    }
+        override fun optInt(index: Int) = nullable(index) { jsonObject -> jsonObject.getInt(index) }
 
-    override fun result(result: CallContextResult, finish: Boolean) {
-        when (result) {
-            is CallContextResult.Success -> success(result.data, finish)
-            is CallContextResult.Error -> error(result.error, finish)
-            else -> error(null, finish)
+        override fun optBoolean(index: Int) =
+            nullable(index) { jsonObject -> jsonObject.getBoolean(index) }
+
+        override fun optFloat(index: Int) =
+            nullable(index) { jsonObject -> jsonObject.getDouble(index).toFloat() }
+
+        override fun optDouble(index: Int) = nullable(index) { jsonObject -> jsonObject.getDouble(index) }
+
+        override fun optJsonObject(index: Int) = nullable(index) { jsonObject ->
+            val jsonString = jsonObject.getJSONObject(index).toString()
+            return@nullable JsonObject.fromJson(jsonString)
+        }
+
+        override fun optLong(index: Int) = nullable(index) { jsonObject -> jsonObject.getLong(index) }
+
+        override fun optNumber(index: Int) = throw NotImplementedError()
+
+        override fun optJsonArray(index: Int) = nullable(index) { jsonObject ->
+            val jsonString = jsonObject.getJSONArray(index).toString()
+            return@nullable JsonArray.fromJson(jsonString)
+        }
+
+        private fun <T> nullable(index: Int, getter: (jsonArray: JSONArray) -> T): T? {
+            if (jsonArray.isNull(index)) return null
+            return getter(jsonArray)
         }
     }
 
-    private fun success(data: JsonObject?, finish: Boolean) {
-        val result = data?.toJSONObject()
+    override fun success(data: Any?, finish: Boolean) {
+        val status = PluginResult.Status.OK
 
-        val pluginResult = if (result == null)
-            PluginResult(PluginResult.Status.OK)
-        else
-            PluginResult(PluginResult.Status.OK, result)
+        val pluginResult = when(data) {
+            null -> PluginResult(status)
+            is String -> PluginResult(status, data)
+            is JsonArray -> PluginResult(status, data.toJSONArray())
+            is JsonObject -> PluginResult(status, data.toJSONObject())
+            is Int -> PluginResult(status, data)
+            is Float -> PluginResult(status, data)
+            is Boolean -> PluginResult(status, data)
+            else -> throw NotImplementedError("This data type is not supported")
+        }
 
         if (!finish) {
             pluginResult.keepCallback = true
@@ -79,14 +84,14 @@ class CallContext(
         callbackContext.sendPluginResult(pluginResult)
     }
 
-    private fun error(error: Throwable?, finish: Boolean) {
+    override fun error(error: Throwable?, finish: Boolean) {
         val exception: Exception? = when (error) {
             is Exception -> error
             is Throwable -> Exception(error)
             else -> null
         }
 
-        val json = (exception as? PluginException)?.let(errorMapper::mapToJson)
+        val json = (exception as? PluginException)?.let(mappers.errorMapper::mapToJson)
         val result = (json ?: MutableJsonObject()).toJSONObject()
 
         val pluginResult = PluginResult(PluginResult.Status.ERROR, result)
