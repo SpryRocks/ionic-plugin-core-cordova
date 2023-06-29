@@ -4,6 +4,7 @@ import android.app.Activity
 import com.ionic.plugin.android.cordova.core.actions.CallContext
 import com.ionic.plugin.core.actions.Delegate
 import com.ionic.plugin.core.actions.Mappers
+import com.spryrocks.kson.JsonObject
 import org.apache.cordova.CallbackContext
 import org.json.JSONArray
 
@@ -38,5 +39,8 @@ abstract class CordovaPlugin<TDelegate : Delegate<TMappers>, TMappers : Mappers>
         WrapperDelegate {
         override val activity: Activity
             get() = wrapper.cordova.activity
+
+        override fun sendEvent(name: String, data: JsonObject) {
+        }
     }
 }
